@@ -1,0 +1,17 @@
+fastapi[standard]~=0.115.11
+sqlalchemy~=2.0.38
+psycopg[binary]==3.2.2
+redis~=5.2.1
+pyjwt~=2.10.1
+passlib[bcrypt]~=1.7.4
+aio-pika
+pydantic-settings
+aiobotocore~=2.21.1
+openslide-python
+openslide-bin
+starlette~=0.46.0
+loguru~=0.7.3
+python-dotenv~=1.0.1
+python-multipart
+aiofiles
+beanie

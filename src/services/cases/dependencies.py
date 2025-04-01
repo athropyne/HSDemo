@@ -1,0 +1,6 @@
+async def is_member():
+    ...
+
+
+async def is_administrator():
+    ...
