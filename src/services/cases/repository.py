@@ -1,5 +1,7 @@
 from beanie import WriteRules, UpdateResponse
+from beanie.odm.operators.find.logical import And
 from beanie.odm.operators.update.general import Set
+from pydantic import BaseModel
 from pymongo.results import UpdateResult, DeleteResult
 
 from src.core.schemas import Case
@@ -81,8 +83,8 @@ class CaseRepository:
             raise CaseNotFound
 
     @staticmethod
-    async def get_document_by_id(case_id: ID):
-        case = Case.get(case_id)
+    async def get_document_by_id(case_id: ID, fetch_links: bool = False):
+        case = await Case.get(case_id, fetch_links=fetch_links)
         if case is None:
             raise CaseNotFound
         return case
@@ -90,3 +92,19 @@ class CaseRepository:
     @staticmethod
     async def delete_cases_in_team(team_id: ID):
         await Case.find(Case.team.id == team_id).delete()
+
+    @staticmethod
+    async def is_team_member(case_id: ID, user_id: ID):
+        case = await CaseRepository.get_document_by_id(case_id)
+        team = await TeamRepository.get_document_by_id(case.team.ref.id)
+        if user_id in [member.ref.id for member in team.members]:
+            return True
+        return False
+
+    @staticmethod
+    async def get_administrator_team(case_id: ID, user_id: ID):
+        case = await CaseRepository.get_document_by_id(case_id)
+        team = await TeamRepository.get_document_by_id(case.team.ref.id)
+        if user_id in team.administrator.ref.id:
+            return True
+        return False

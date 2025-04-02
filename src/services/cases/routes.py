@@ -3,7 +3,7 @@ from starlette import status
 
 from src.core.security import TokenManager
 from src.core.types import ID, ReplyMode, IDModel
-from src.services.cases.dependencies import is_member, is_administrator
+from src.services.cases.dependencies import is_member, is_administrator, Action
 from src.services.cases.dto.input import CreateCase, UpdateCase
 from src.services.cases.dto.output import CaseFullInfo, CaseShortInfo
 from src.services.cases.service import CaseService
@@ -11,12 +11,13 @@ from src.services.cases.service import CaseService
 case_router = APIRouter(prefix="/cases", tags=["Случаи"])
 output_types = CaseFullInfo | CaseShortInfo | IDModel
 
+
 @case_router.post(
     "/",
     status_code=status.HTTP_201_CREATED,
     summary="Создать новый случай",
     description="Создает новый случай. Доступно только участнику команды",
-    dependencies=[Depends(is_member)],
+    dependencies=[Depends(is_member(Action.CREATE))],
     response_model=output_types
 )
 async def create(
@@ -33,7 +34,7 @@ async def create(
     status_code=status.HTTP_200_OK,
     summary="Изменить случай",
     description="Обновляет случай. Доступно только участнику команды",
-    dependencies=[Depends(is_member)],
+    dependencies=[Depends(is_member(Action.CHECK_BY_CASE_ID))],
     response_model=output_types
 )
 async def update(
@@ -43,7 +44,7 @@ async def update(
         client_id: ID = Depends(TokenManager.decode),
         service: CaseService = Depends(CaseService)
 ):
-    return await service.update(client_id, case_id, model,output_mode)
+    return await service.update(client_id, case_id, model, output_mode)
 
 
 @case_router.get(
@@ -51,7 +52,7 @@ async def update(
     status_code=status.HTTP_200_OK,
     summary="Получить случай по идентификатору",
     description="Возвращает случай по идентификатору. Доступно только участнику команды",
-    dependencies=[Depends(is_member)],
+    dependencies=[Depends(is_member(Action.CHECK_BY_CASE_ID))],
     response_model=output_types
 )
 async def get_by_id(
@@ -68,7 +69,7 @@ async def get_by_id(
     status_code=status.HTTP_200_OK,
     summary="Получить список случаев",
     description="Возвращает список случаев в команде. Доступно только участникам команды",
-    dependencies=[Depends(is_member)],
+    dependencies=[Depends(is_member(Action.GET_LIST))],
     response_model=list[output_types]
 )
 async def get_list(
@@ -87,7 +88,7 @@ async def get_list(
     status_code=status.HTTP_204_NO_CONTENT,
     summary="Удалить случай по идентификатору",
     description="Удаляет случай по идентификатору. Доступно только администратору команды",
-    dependencies=[Depends(is_administrator)]
+    dependencies=[Depends(is_member(Action.DELETE))]
 )
 async def delete(
         case_id: ID,
