@@ -51,7 +51,7 @@ async def update(
     status_code=status.HTTP_200_OK,
     summary="Получить случай по идентификатору",
     description="Возвращает случай по идентификатору. Доступно только участнику команды",
-    dependencies=[Depends(id_member)],
+    dependencies=[Depends(is_member)],
     response_model=output_types
 )
 async def get_by_id(
